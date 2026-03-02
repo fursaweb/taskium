@@ -53,7 +53,7 @@ const TaskItem = ({ task }: Props) => {
 
   const handleDelete = () => {
     if (_id) {
-      deleteTaskMutation.mutate(_id);
+      deleteTaskMutation.mutate({ id: _id, userId: task.userId });
     }
   };
 

@@ -1,6 +1,6 @@
 import prisma from "@/app/utils/connect";
 import { auth } from "@clerk/nextjs";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
@@ -15,14 +15,14 @@ export async function POST(req: Request) {
     if (!title || !description || !date) {
       return NextResponse.json({
         error: "Missing required fields",
-        status: 401,
+        status: 400,
       });
     }
 
     if (title.length < 3) {
       return NextResponse.json({
-        error: "Title must be at least 3 charachters long",
-        status: 401,
+        error: "Title must be at least 3 characters long",
+        status: 400,
       });
     }
 
@@ -74,16 +74,21 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized", status: 401 });
     }
 
-    const task = await prisma.task.update({
+    const updateResult = await prisma.task.updateMany({
       where: {
         id,
+        userId,
       },
       data: {
         isCompleted,
       },
     });
 
-    return NextResponse.json(task);
+    if (updateResult.count === 0) {
+      return NextResponse.json({ error: "Task not found", status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.log("ERROR UPDATING TASK: ", error);
     return NextResponse.json({ error: "Error updating task", status: 500 });

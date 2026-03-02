@@ -10,7 +10,10 @@ class TaskServices {
     page: number
   ): Promise<ITask[] | undefined> {
     try {
-      const { data } = await $api.get("/tasks", { params: { userId, page } });
+      const { data } = await $api.get("/tasks", {
+        params: { page },
+        headers: { "x-user-id": userId },
+      });
       return data.tasks;
     } catch (error) {
       console.log(error);
@@ -20,7 +23,9 @@ class TaskServices {
 
   async createTask(formData: ITask) {
     try {
-      const res = await $api.post("/tasks", formData);
+      const res = await $api.post("/tasks", formData, {
+        headers: { "x-user-id": formData.userId },
+      });
 
       if (res.data.error) {
         toast.error(res.data.error);
@@ -37,7 +42,9 @@ class TaskServices {
 
   async updateTask(formData: ITask) {
     try {
-      const res = await $api.patch(`/tasks/${formData._id}`, formData);
+      const res = await $api.patch(`/tasks/${formData._id}`, formData, {
+        headers: { "x-user-id": formData.userId },
+      });
 
       if (!res.data.error) {
         toast.success("Task updated");
@@ -48,9 +55,11 @@ class TaskServices {
     }
   }
 
-  async deleteTask(id: string) {
+  async deleteTask({ id, userId }: { id: string; userId: string | undefined }) {
     try {
-      const res = await $api.delete(`/tasks/${id}`);
+      const res = await $api.delete(`/tasks/${id}`, {
+        headers: { "x-user-id": userId },
+      });
       return res.data;
     } catch (error) {
       console.log(error);

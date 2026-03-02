@@ -1,6 +1,6 @@
 import prisma from "@/app/utils/connect";
 import { auth } from "@clerk/nextjs";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
@@ -14,13 +14,18 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized", status: 401 });
     }
 
-    const task = await prisma.task.delete({
+    const deleteResult = await prisma.task.deleteMany({
       where: {
         id,
+        userId,
       },
     });
 
-    return NextResponse.json(task);
+    if (deleteResult.count === 0) {
+      return NextResponse.json({ error: "Task not found", status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: "Error deleting task", status: 500 });
   }
